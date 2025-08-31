@@ -62,7 +62,7 @@ jobs:
         env:
           RAW_COOKIE: ${{ secrets.RAW_COOKIE }}
         run: |
-          MODE="${{ github.event.inputs.mode || '1' }}"
+          MODE="${{ github.event.inputs.mode || '2' }}"
           RUNTIME_MIN="${{ github.event.inputs.runtime_minutes || '55' }}"
-          printf "%b" "${MODE}\n\n\n" > .gha-input.txt   # 1=menu, enter=seed default, enter=booster default
-          timeout "${RUNTIME_MIN}m" node src/cli.js < .gha-input.txt
+          printf "%b" "2\n\n\n" > .gha-input.txt
+    timeout "55m" node src/cli.js < .gha-input.txt
