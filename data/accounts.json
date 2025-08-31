@@ -2,7 +2,17 @@
 
   {
     "name": "Akun1",
-    "rawCookie": ; __Host-authjs.csrf-token=;"
+    "rawCookie": "session-token=PASTE_DISINI; __Host-authjs.csrf-token=PASTE_DISINI;"
+  },
+
+  {
+    "name": "Akun2",
+    "rawCookie": "session-token=PASTE_DISINI; __Host-authjs.csrf-token=PASTE_DISINI;"
+  },
+
+  {
+    "name": "Akun3",
+    "rawCookie": "session-token=PASTE_DISINI; __Host-authjs.csrf-token=PASTE_DISINI;"
   },
 
 ]
