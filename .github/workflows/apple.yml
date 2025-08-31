@@ -1,0 +1,68 @@
+name: Appleville CLI — Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mode: 1=Plant LOOP, 2=Push Prestige"
+        required: false
+        default: "2"
+      runtime_minutes:
+        description: "Durasi sebelum auto-stop (minutes)"
+        required: false
+        default: "55"
+  schedule:
+    # Opsional: jalan tiap 6 jam (UTC). Hapus kalau ga perlu.
+    - cron: "0 */6 * * *"
+
+concurrency:
+  group: appleville-cli
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Write accounts.json from secret (multi-account)
+        if: ${{ secrets.ACCOUNTS_JSON != '' }}
+        run: |
+          mkdir -p data
+          printf "%s" '${{ secrets.ACCOUNTS_JSON }}' > data/accounts.json
+
+      - name: Write akun.txt from secret (single-account fallback)
+        if: ${{ secrets.RAW_COOKIE != '' }}
+        run: |
+          printf "%s" '${{ secrets.RAW_COOKIE }}' > akun.txt
+
+      - name: Sanity check accounts
+        run: |
+          if [ -f data/accounts.json ]; then
+            echo "accounts.json exists."
+          elif [ -f akun.txt ]; then
+            echo "akun.txt exists."
+          else
+            echo "::error::No accounts found. Set ACCOUNTS_JSON or RAW_COOKIE in repo secrets."
+            exit 1
+          fi
+
+      - name: Run CLI (non-interactive with defaults)
+        env:
+          RAW_COOKIE: ${{ secrets.RAW_COOKIE }}
+        run: |
+          MODE="${{ github.event.inputs.mode || '1' }}"
+          RUNTIME_MIN="${{ github.event.inputs.runtime_minutes || '55' }}"
+          printf "%b" "${MODE}\n\n\n" > .gha-input.txt   # 1=menu, enter=seed default, enter=booster default
+          timeout "${RUNTIME_MIN}m" node src/cli.js < .gha-input.txt
